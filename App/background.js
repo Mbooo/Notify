@@ -3,9 +3,10 @@ const RESPONSE_TYPE = encodeURIComponent('token');
 const REDIRECT_URI = encodeURIComponent('https://pgcklffgbeegpjejohlcfengdiblgipj.chromiumapp.org/');
 const SCOPE = encodeURIComponent('user-read-email');
 const SHOW_DIALOG = encodeURIComponent('true'); 
+const apiUrl = "https://api.spotify.com/v1";
 let STATE = '';
 let ACCESS_TOKEN = '';
-
+let regexSearch = /\bsearch-\b(.*)$/;
 let user_signed_in = false;
 
 function create_spotify_endpoint() {
@@ -27,11 +28,12 @@ function create_spotify_endpoint() {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log(request.message);
     if (request.message === 'login') {
         if (user_signed_in) {
             console.log("User is already signed in.");
         } else {
-            logInWithSpotify();
+            logInWithSpotify(sendResponse);
         }
       
       return true;
@@ -42,11 +44,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
 
         return true;
+    }else if(request.message.match(regexSearch)){
+        const match = request.message.match(regexSearch);
+        searchForArtist(match[1]);
+        sendResponse({ message: 'test'});
+        
     }
 });
 
 
-function logInWithSpotify(){
+function logInWithSpotify(sendResponse){
     chrome.identity.launchWebAuthFlow({
         url: create_spotify_endpoint(),
         interactive: true
@@ -73,10 +80,25 @@ function logInWithSpotify(){
                     chrome.browserAction.setPopup({ popup: './popup-signed-in.html' }, () => {
                         sendResponse({ message: 'success' });
                     });
+                    console.log(ACCESS_TOKEN)
                 } else {
                     sendResponse({ message: 'fail' });
                 }
             }
         }
     });
+}
+
+
+async function searchForArtist(query){
+    const searchResult = await fetch(`${apiUrl}/search?query=${query}&type=artist&market=FR&locale=fr-FR%2Cfr%3Bq%3D0.9%2Cen-US%3Bq%3D0.8%2Cen%3Bq%3D0.7%2Ces%3Bq%3D0.6&offset=0&limit=5&access_token=${ACCESS_TOKEN}`);
+    const data = await searchResult.json();
+    console.log(data);
+    let artists = [];
+    for(let i = 0; i < data.artists.items.length; i++){
+        artists.push(data.artists.items[i].name);
+       
+    }
+    return artists;
+    
 }
