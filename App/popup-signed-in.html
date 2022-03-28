@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="./popup_scripts.js"></script>
+    <!-- <script src="./popup_scripts.js"></script> -->
     <script src="./background.js"></script>
+    <link rel="stylesheet" href="style.css">
     <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"
         integrity="sha512-8bHTC73gkZ7rZ7vpqUQThUDhqcNFyYi2xgDgPDHc+GXVGHXq+xPjynxIopALmOPqzo9JZj0k6OqqewdGO3EsrQ=="
         referrerpolicy="no-referrer" rel="stylesheet" />
@@ -15,16 +16,30 @@
 </head>
 
 <body>
-    <h1>Vous êtes bien connecté</h1>
-    <form id="search-bar">
-        <div class="ui icon input">
-            <input class="prompt" id="input-search" type="text" placeholder="Cherchez vos artistes favoris">
-            <i class="search icon"></i>
-        </div>
-        <div class="results"></div>
-        </div>
-    </form>
+    <h1>Notify</h1>
+    <div class="ui tabular menu">
+        <div id="search-tab" class="item active" data-tab="recherche">Recherche</div>
+        <div id="notifications-tab" class="item" data-tab="notifications">Notifications</div>
+    </div>
 
+      <div id="search-tab-content" class="ui tab active" data-tab="recherche">
+        <h3>Suivez de nouveaux artistes !</h3>
+        <form id="search-bar">
+            <div class="ui icon input">
+                <input class="prompt" id="input-search" type="text" placeholder="Cherchez vos artistes favoris">
+                <i class="search icon"></i>
+            </div>
+            <div id="results">
+
+            </div>
+            
+        </form>
+      </div>
+      <div id="notifications-tab-content" class="ui tab" data-tab="notifications">
+        <h1>Dernière sortie de la semaine</h1>
+      </div>
+    
+    
     <button class="fluid red ui button" id='sign-out'>Se déconnecter</button>
 
 </body>
