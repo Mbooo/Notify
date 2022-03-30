@@ -22,8 +22,7 @@
     },
     "background": {
         "scripts": ["browser-polyfill.js",
-          "background.js",
-          "node_modules/moment/moment.js"
+          "background.js"
         ]
       }
 }

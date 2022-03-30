@@ -8,7 +8,7 @@ const SHOW_DIALOG = encodeURIComponent('true');
 const apiUrl = "https://api.spotify.com/v1";
 const bg = chrome.extension.getBackgroundPage();
 let STATE = '';
-let ACCESS_TOKEN = 'BQAWoHEXpIc9JWR6gp_mT5OXuNS5HglUr1BHEuReB8tcpUnZLeAcUwtK0IZl6eG72-pwYV9b35p60DP4gyUcYaIt3f0eXGfZySsqjmcnpVbgX5oY_xI6pf3_Wc_1-t4Pt_zteQ5Al0ZNBamADGFAe3-yoZBEQJzyGlZJH9aYT4LOJk2J';
+let ACCESS_TOKEN = '';
 let regexSearch = /\bsearch-\b(.*)$/;
 let user_signed_in = false;
 
@@ -59,17 +59,7 @@ window.onload = function(){
     }
     
     
-    // chrome.alarms.create("1heure", {
-    //     delayInMinutes: 0.15,
-    //     periodInMinutes: 0.15
-    // });
-
-    // chrome.alarms.onAlarm.addListener(function(alarm) {
-    //     if(alarm.name === "1heure"){
-           
-    //         updateNotifications();
-    //     }
-    // });
+   
     
 }
 
@@ -162,10 +152,6 @@ async function searchForArtist(){
     let artists = [];
     for(let i = 0; i < data.artists.items.length; i++){
         artists.push(data.artists.items[i].name);
-        // let mark = document.createElement("h2");
-        // let text = document.createTextNode(data.artists.items[i].name);
-        // mark.appendChild(text);
-        // document.getElementById("results").appendChild(mark);
         let div_card = document.createElement("div");
         div_card.classList.add("ui","cards");
         
@@ -195,59 +181,64 @@ async function searchForArtist(){
         button.appendChild(icon);
 
         button.addEventListener("click",function(){
-            
             follow(data.artists.items[i].id);
         })
         card.appendChild(button);
-
         document.getElementById("results").appendChild(div_card);
     }
     return artists;
     
 }
 
-function updateNotifications(){
-    getTracks(getArtistsFollowed());
-}
-
-
-async function getTracks(artists){
-    let tracksList = [];
-    for(let i = 0; i < artists.length; i++){
-        let id = artists[i];
-        const tracks = await fetch(`${apiUrl}/artists/${id}/albums?offset=0&limit=2&include_groups=single&market=FR&locale=fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7,es;q=0.6&access_token=${ACCESS_TOKEN}`);
-        const dataTracks = await tracks.json();
-        bg.console.log(dataTracks);
-        tracksList.push(dataTracks.items[i].name);
-        
-
-    }
-    bg.console.log(tracksList);
-    
-}
-async function getArtistsFollowed(){
+async function updateNotifications(){
     const artistsFollowed = await fetch(`${apiUrl}/me/following?type=artist&access_token=${ACCESS_TOKEN}`);
     const dataArtists = await artistsFollowed.json();
     let artistsId = [];
    
-    // bg.console.log(dataArtists);
+    bg.console.log(dataArtists);
     for(let i = 0; i < dataArtists.artists.items.length;i++){
         artistsId.push(dataArtists.artists.items[i].id);
     }
-    return artistsId;
+    
+    let tracks = [];
+    for(let y = 0; y < artistsId.length; y++){
+        const tracks = await fetch(`${apiUrl}/artists/${artistsId[y]}/albums?offset=0&limit=2&include_groups=single&market=FR&locale=fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7,es;q=0.6&access_token=${ACCESS_TOKEN}`);
+        const dataTracks = await tracks.json();
+        bg.console.log(dataTracks);
+        for(let i = 0; i < dataTracks.items.length; i++){
+            let link = document.createElement("a");
+            link.href = dataTracks.items[i].external_urls.spotify;
+            
+            let div_card = document.createElement("div");
+            div_card.classList.add("ui","cards");
+            
+            let card = document.createElement("div");
+            card.classList.add("card");
+            let div_content = document.createElement("div");
+            div_content.classList.add("content");
+            let description = document.createElement("div");
+        description.classList.add("description");
+        description.appendChild(document.createTextNode("Artiste  : " + dataTracks.items[i].artists[0].name));
+
+            let header = document.createElement("div");
+            header.classList.add("header");
+            header.appendChild(document.createTextNode(dataTracks.items[i].name));
+                
+    
+            div_content.appendChild(header);
+            div_content.appendChild(description);
+            card.appendChild(div_content);
+            div_card.appendChild(card);
+            link.append(div_card);
+            document.getElementById("resultsNotif").appendChild(link);
+        }
+        
+        
+    }
+    bg.console.log(tracks);
+    
+    
 }
 
-// function artistsTracks(artistsId){
-//     let tracksToBeDisplayed = [];
-//     for(let i = 0; i < artistsId.length; i++){
-//         const lastTracks = await fetch(`${apiUrl}/artists/${artistsId[i]}/albums?offset=0&limit=5&include_groups=single&market=FR&locale=fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7,es;q=0.6&access_token=${ACCESS_TOKEN}`);
-//         const data = await lastTracks.json();
-//         for(let y = 0; y < data.items.length; i++){
-//             let release_date = moment(data.items[0].release_date);
-//             let actualDate = moment();
-//             if(actualDate.isoWeek() == release_date.isoWeek()){
-//                 tracksToBeDisplayed.push(data.items[0].name);
-//             }
-//         }
-//     }
-// }
+
+
